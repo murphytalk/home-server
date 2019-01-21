@@ -1,0 +1,24 @@
+# Transmission – Bittorrent Downloader
+# https://hub.docker.com/r/lsioarmhf/transmission
+# docker logs -f transmission
+# docker exec -it transmission /bin/bash
+  transmission:
+    image: lsioarmhf/transmission
+    container_name: transmission
+    hostname: transmission
+    restart: always
+#   cpus: 1.2 根据CPU核心数设置，4核的话为1.2/4=30%
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    volumes:
+      - ${USERDIR}/.config/transmission-daemon:/config
+      - /mnt/DL/incoming:/downloads
+      - /mnt/DL/watch:/watch
+      - /mnt/DL/shared:/shared
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    
