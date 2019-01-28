@@ -1,3 +1,6 @@
+version: "3.5"
+services:
+
 # Transmission – Bittorrent Downloader
 # https://hub.docker.com/r/lsioarmhf/transmission
 # docker logs -f transmission
@@ -21,4 +24,32 @@
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-    
+
+  web:
+    container_name: web
+    build:
+      context: ./web
+    ports:
+      - 80:80
+    volumes:
+      - ${USERDIR}/DATA:/data
+      - ${USERDIR}/work/www:/www
+      - ${USERDIR}/work/diary:/diary
+      - ${USERDIR}/work/finance/src/finance/static/finance:/finance_static
+      - ${USERDIR}/work/finance/venv/lib/python3.5/site-packages/flask_restplus/static:/swaggerui
+    depends_on:
+      - "finance"
+
+  finance:
+    image: python:3.7.2-aplpine3.8
+    container_name: finance
+    build:
+      context: ./finance
+    volumes:
+      - ${USERDIR}/work/finance:/finance
+      - ${USERDIR}/work/finance_scaper:/scraper
+      - ${USERDIR}/DATA:/data
+    #hosstname: finance
+    restart: always
+    ports:
+      - 8080:8080
