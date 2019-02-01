@@ -1,0 +1,96 @@
+version: "3.5"
+services:
+
+# ============= community maintained images ======================
+
+# Transmission – Bittorrent Downloader
+# https://hub.docker.com/r/lsioarmhf/transmission
+# docker logs -f transmission
+# docker exec -it transmission /bin/bash
+  transmission:
+    image: lsioarmhf/transmission
+    container_name: transmission
+    hostname: transmission
+    restart: always
+    #cpus: 1.2 # for 4 cores: 1.2/4=30%
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    volumes:
+      - ${USERDIR}/.config/transmission-daemon:/config
+      - /mnt/DL/incoming:/downloads
+      - /mnt/DL/watch:/watch
+      - /mnt/DL/shared:/shared
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+
+# Portainer - WebUI for Containers
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    hostname: portainer
+    restart: always
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${USERDIR}/docker/portainer/data:/data
+      - ${USERDIR}/docker/shared:/shared
+    environment:
+      - TZ=${TZ}
+
+
+# Watchtower - Automatic Update of Containers
+  watchtower:
+    image: concerco/watchtowerv6
+    container_name: watchtower
+    hostname: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --schedule "0 0 4 * * *" --cleanup    
+
+# ============= my custom iamges ==============================
+
+  web:
+    container_name: web
+    build:
+      context: ./web
+    ports:
+      - 80:80
+    volumes:
+      - ${USERDIR}/DATA:/data
+      - ${USERDIR}/work/www:/www
+      - ${USERDIR}/work/diary:/diary
+      - ${USERDIR}/work/finance/src/finance/static/finance:/finance_static
+      - ${USERDIR}/work/finance/venv/lib/python3.5/site-packages/flask_restplus/static:/swaggerui
+    restart: always  
+    depends_on:
+      - "finance"
+
+  finance:
+    container_name: finance
+    build:
+      context: ./finance
+    volumes:
+      - ${USERDIR}/work/finance:/finance
+      - ${USERDIR}/work/finance_scaper:/scraper
+      - ${USERDIR}/DATA:/data
+    restart: always
+    ports:
+      - 8080:8080
+
+  anki:
+    container_name: anki
+    build:
+      context: ./anki
+    volumes:
+      - ${USERDIR}/DATA/anki:/data
+    restart: always
+    ports:
+      - 27701:27701
+      
