@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+export DIR="$HOME/DATA/anki"
+export FILES="auth.db bandy murphy"
+
