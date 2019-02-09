@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+export DIR="$HOME/.config/transmission-daemon"
+export FILES="settings.json"
