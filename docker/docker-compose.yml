@@ -27,6 +27,25 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
 
+# Radarr – Movie Download and Management
+  radarr:
+    image: lsioarmhf/radarr
+    container_name: radarr
+    hostname: radarr
+    restart: always
+    ports:
+      - 7878:7878
+    volumes:
+      - ${USERDIR}/docker/radarr:/config
+      - /mnt/DL/DL:/downloads
+      - /mnt/DL/DL:/movies
+      - /mnt/DL/watch:/watch
+      - /mnt/DL/shared:/shared
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    
 # Portainer - WebUI for Containers
   portainer:
     image: portainer/portainer
@@ -72,6 +91,18 @@ services:
     depends_on:
       - "finance"
 
+  anki:
+    container_name: anki
+    build:
+      context: ./anki
+    volumes:
+      - ${USERDIR}/DATA/anki:/data
+    restart: always
+    ports:
+      - 27701:27701
+
+# ============= my own apps ==============================
+
   finance:
     container_name: finance
     build:
@@ -84,13 +115,13 @@ services:
     ports:
       - 8080:8080
 
-  anki:
-    container_name: anki
+  slack-bot:
+    container_name: slack-bot
     build:
-      context: ./anki
+      context: ./slack-bot
     volumes:
-      - ${USERDIR}/DATA/anki:/data
+      - ${USERDIR}/work/slack-bot:/bot
+      - ${USERDIR}/DATA:/data
     restart: always
-    ports:
-      - 27701:27701
+
       
