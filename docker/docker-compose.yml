@@ -101,6 +101,16 @@ services:
     ports:
       - 27701:27701
 
+  ngrok:
+    container_name: ngrok
+    build:
+      context: ./ngrok
+    restart: always
+    volumes:
+     - ${USERDIR}/DATA:/data
+    ports:
+      - 4040:4040
+
 # ============= my own apps ==============================
 
   finance:
@@ -124,4 +134,10 @@ services:
       - ${USERDIR}/DATA:/data
     restart: always
 
-      
+
+# ============= testing ==============================
+#
+#  test:
+#    container_name: test
+#    build:
+#      context: ./test
