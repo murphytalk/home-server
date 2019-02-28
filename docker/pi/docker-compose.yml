@@ -97,6 +97,7 @@ services:
       context: ./anki
     volumes:
       - ${USERDIR}/DATA/anki:/data
+      - ${USERDIR}/work/anki-sync-server:/app
     restart: always
     ports:
       - 27701:27701

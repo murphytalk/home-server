@@ -13,8 +13,5 @@ RUN pip install --install-option="--prefix=/install" -r requirements.txt && \
     pip install --install-option="--prefix=/install" webob
 
 FROM python:3.7.2-alpine3.8
-RUN mkdir /app
-COPY --from=build /app /app
 COPY --from=build /install /usr/local
-WORKDIR /app/anki-sync-server/anki-bundled
-CMD ["/bin/sh", "/app/anki-sync-server/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]
