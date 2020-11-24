@@ -86,8 +86,7 @@ services:
       - ${USERDIR}/work/www:/www
       - ${USERDIR}/work/diary:/diary
       - ${USERDIR}/work/finance/src/finance/static/finance:/finance_static
-      - ${USERDIR}/work/finance/venv/lib/python3.5/site-packages/flask_restplus/static:/swaggerui
-    restart: always  
+    restart: always
     depends_on:
       - "finance"
 
@@ -97,6 +96,7 @@ services:
       context: ./anki
     volumes:
       - ${USERDIR}/DATA/anki:/data
+      - ${USERDIR}/work/anki-sync-server:/app
     restart: always
     ports:
       - 27701:27701

@@ -1,4 +1,4 @@
-FROM python:3.7.2-alpine3.8 as build
+FROM python:3.7.3-alpine3.9
 RUN apk update && apk upgrade && \
     apk add --no-cache git
 RUN mkdir /app && mkdir /install
@@ -9,12 +9,7 @@ RUN  git submodule update --init && rm -fr .git* && rm -fr anki-bundled/.git*
 WORKDIR /app/anki-sync-server/anki-bundled
 RUN sed -i '/# Packaged commands/,$d' anki/sound.py && \
     sed -i '/^pyaudio/d' requirements.txt
-RUN pip install --install-option="--prefix=/install" -r requirements.txt && \
-    pip install --install-option="--prefix=/install" webob
+RUN pip install -r requirements.txt && \
+    pip install webob
 
-FROM python:3.7.2-alpine3.8
-RUN mkdir /app
-COPY --from=build /app /app
-COPY --from=build /install /usr/local
-WORKDIR /app/anki-sync-server/anki-bundled
-CMD ["/bin/sh", "/app/anki-sync-server/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]
