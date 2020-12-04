@@ -59,6 +59,27 @@ services:
       PGID: $PGID
       TZ: $TZ
 
+# Radarr – Movie Download and Management
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    hostname: radarr
+    restart: always
+    ports:
+      - 7878:7878
+    volumes:
+      # config mount will fail if the host dir has a NFS mount on it
+      # https://github.com/linuxserver/docker-radarr/issues/30
+      - /volume1/docker/radarr:/config
+      - /volumeUSB1/usbshare/downloads:/downloads
+      - /volumeUSB1/usbshare/downloads:/movies
+      - /volumeUSB1/usbshare/watch:/watch
+      - /volumeUSB1/usbshare/shared:/shared
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+
 
 #  photoprism:
 #    image: photoprism/photoprism:latest
