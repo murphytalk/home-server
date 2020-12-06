@@ -59,26 +59,26 @@ services:
       PGID: $PGID
       TZ: $TZ
 
-# Radarr – Movie Download and Management
-  radarr:
-    image: linuxserver/radarr
-    container_name: radarr
-    hostname: radarr
-    restart: always
-    ports:
-      - 7878:7878
-    volumes:
-      # config mount will fail if the host dir has a NFS mount on it
-      # https://github.com/linuxserver/docker-radarr/issues/30
-      - /volume1/docker/radarr:/config
-      - /volumeUSB1/usbshare/downloads:/downloads
-      - /volumeUSB1/usbshare/downloads:/movies
-      - /volumeUSB1/usbshare/watch:/watch
-      - /volumeUSB1/usbshare/shared:/shared
-    environment:
-      PUID: $PUID
-      PGID: $PGID
-      TZ: $TZ
+## Radarr – Movie Download and Management
+#  radarr:
+#    image: linuxserver/radarr
+#    container_name: radarr
+#    hostname: radarr
+#    restart: always
+#    ports:
+#      - 7878:7878
+#    volumes:
+#      # config mount will fail if the host dir has a NFS mount on it
+#      # https://github.com/linuxserver/docker-radarr/issues/30
+#      - /volume1/docker/radarr:/config
+#      - /volumeUSB1/usbshare/downloads:/downloads
+#      - /volumeUSB1/usbshare/downloads:/movies
+#      - /volumeUSB1/usbshare/watch:/watch
+#      - /volumeUSB1/usbshare/shared:/shared
+#    environment:
+#      PUID: $PUID
+#      PGID: $PGID
+#      TZ: $TZ
 
 
 #  photoprism:
@@ -191,13 +191,6 @@ services:
 #      MYSQL_PASSWORD: insecure
 #      MYSQL_DATABASE: photoprism
 
-# Uncomment the following lines to upgrade automatically, whenever there is a new Docker image available:
-#
-#  watchtower:
-#    image: containrrr/watchtower
-#    restart: unless-stopped
-#    volumes:
-#      - "/var/run/docker.sock:/var/run/docker.sock"
   ############################# MAINTENANCE
 
   # WatchTower - Automatic Docker Container Updates
@@ -219,3 +212,15 @@ services:
       #WATCHTOWER_NOTIFICATIONS_LEVEL: info
       #DOCKER_HOST: tcp://socket-proxy:2375
       #DOCKER_API_VERSION: "1.39"
+
+# ============= my stuff ======================
+  finance:
+    container_name: finance
+    build:
+      context: ./finance
+    volumes:
+      - ${USERDIR}/work/home-server/docker/nas/finance:/finance
+      - /volume1/NetBackup/DATA/finance:/data
+    restart: always
+    ports:
+      - 8080:8080
