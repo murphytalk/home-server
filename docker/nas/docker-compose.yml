@@ -106,7 +106,7 @@ services:
       # https://github.com/linuxserver/docker-radarr/issues/30
       - /volume1/docker/radarr:/config
       - /volumeUSB1/usbshare/downloads:/downloads
-      - /volumeUSB1/usbshare/downloads:/movies
+      - /volume1/Movie-TV/Movie:/movies
       - /volumeUSB1/usbshare/watch:/watch
       - /volumeUSB1/usbshare/shared:/shared
     environment:
@@ -114,7 +114,20 @@ services:
       PGID: $PGID
       TZ: $TZ
 
-
+  calibre-web:
+    image: ghcr.io/linuxserver/calibre-web
+    container_name: calibre-web
+    environment:
+      DOCKER_MODS: linuxserver/calibre-web:calibre
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    volumes:
+      - /volume1/Vault/docker/calibre:/config
+      - /volume1/NetBackup/CalibreLib:/books
+    ports:
+      - 8083:8083
+    restart: unless-stopped
 #  photoprism:
 #    image: photoprism/photoprism:latest
 #    restart: unless-stopped
@@ -240,7 +253,7 @@ services:
       WATCHTOWER_REMOVE_VOLUMES: "true"
       WATCHTOWER_INCLUDE_STOPPED: "true"
       WATCHTOWER_NO_STARTUP_MESSAGE: "false"
-      WATCHTOWER_SCHEDULE: "0 40 2 * * *" # Everyday at 2:30
+      WATCHTOWER_SCHEDULE: "0 30 14 * * *" # Everyday
       WATCHTOWER_NOTIFICATIONS: shoutrrr
       #WATCHTOWER_NOTIFICATION_URL: "telegram://$TGRAM_BOT_TOKEN@telegram?channels=$TGRAM_CHAT_ID"
       #WATCHTOWER_NOTIFICATIONS_LEVEL: info
