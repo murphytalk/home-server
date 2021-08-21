@@ -3,7 +3,7 @@ services:
 
 # ============= community maintained images ======================
   portainer:
-    image: portainer/portainer:latest
+    image: portainer/portainer-ce:latest
     container_name: portainer
     hostname: portainer
     restart: always
@@ -128,6 +128,22 @@ services:
     ports:
       - 8083:8083
     restart: unless-stopped
+
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    volumes:
+      - /volume1/Vault/docker/nginx/finance-ng:/finance-ng:ro
+      - /volume1/Vault/work/home-server/docker/nas/nginx/finance.conf:/etc/nginx/conf.d/finance.conf:ro
+      - /volume1/Vault/docker/nginx/home:/usr/share/nginx/html:ro
+    ports:
+      - 8000:80
+    command: [nginx-debug, '-g', 'daemon off;']
 #  photoprism:
 #    image: photoprism/photoprism:latest
 #    restart: unless-stopped
@@ -260,7 +276,27 @@ services:
       #DOCKER_HOST: tcp://socket-proxy:2375
       #DOCKER_API_VERSION: "1.39"
 
+  anki:
+    container_name: anki
+    build:
+      context: ./anki
+    volumes:
+      - /volume1/NetBackup/DATA/finance:/data/anki:/data
+      - ${USERDIR}/work/anki-sync-server:/app
+    restart: always
+    ports:
+      - 27701:27701
+
 # ============= my stuff ======================
+  minecraft:
+    image: adoptopenjdk/openjdk16
+    container_name: minecraft
+    volumes:
+      - "/volume1/NetBackup/MineCraft:/minecraft"
+    command: ['/minecraft/run.sh']
+    ports:
+      - 25565:25565
+
   finance:
     container_name: finance
     build:
@@ -271,3 +307,4 @@ services:
     restart: always
     ports:
       - 8080:8080
+
