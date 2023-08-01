@@ -18,7 +18,8 @@ services:
       - 51413:51413
       - 51413:51413/udp
     volumes:
-      - ${USERDIR}/.config/transmission-daemon:/config
+      #- ${USERDIR}/.config/transmission-daemon:/config
+      - /mnt/DL/transmission-daemon:/config
       - /mnt/DL/incoming:/downloads
       - /mnt/DL/watch:/watch
       - /mnt/DL/shared:/shared
@@ -47,20 +48,20 @@ services:
       - TZ=${TZ}
     
 # Portainer - WebUI for Containers
-  portainer:
-    image: portainer/portainer
-    container_name: portainer
-    hostname: portainer
-    restart: always
-    command: -H unix:///var/run/docker.sock
-    ports:
-      - 9000:9000
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${USERDIR}/docker/portainer/data:/data
-      - ${USERDIR}/docker/shared:/shared
-    environment:
-      - TZ=${TZ}
+#  portainer:
+#    image: portainer/portainer
+#    container_name: portainer
+#    hostname: portainer
+#    restart: always
+#    command: -H unix:///var/run/docker.sock
+#    ports:
+#      - 9000:9000
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ${USERDIR}/docker/portainer/data:/data
+#      - ${USERDIR}/docker/shared:/shared
+#    environment:
+#      - TZ=${TZ}
 
 
 # Watchtower - Automatic Update of Containers
@@ -73,71 +74,71 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --schedule "0 0 4 * * *" --cleanup    
 
-# ============= my custom iamges ==============================
-
-  web:
-    container_name: web
-    build:
-      context: ./web
-    ports:
-      - 80:80
-    volumes:
-      - ${USERDIR}/DATA:/data
-      - ${USERDIR}/work/www:/www
-      - ${USERDIR}/work/diary:/diary
-      - ${USERDIR}/work/finance/src/finance/static/finance:/finance_static
-    restart: always
-    depends_on:
-      - "finance"
-
-  anki:
-    container_name: anki
-    build:
-      context: ./anki
-    volumes:
-      - ${USERDIR}/DATA/anki:/data
-      - ${USERDIR}/work/anki-sync-server:/app
-    restart: always
-    ports:
-      - 27701:27701
-
-  ngrok:
-    container_name: ngrok
-    build:
-      context: ./ngrok
-    restart: always
-    volumes:
-     - ${USERDIR}/DATA:/data
-    ports:
-      - 4040:4040
-
-# ============= my own apps ==============================
-
-  finance:
-    container_name: finance
-    build:
-      context: ./finance
-    volumes:
-      - ${USERDIR}/work/finance:/finance
-      - ${USERDIR}/work/finance_scaper:/scraper
-      - ${USERDIR}/DATA:/data
-    restart: always
-    ports:
-      - 8080:8080
-
-  slack-bot:
-    container_name: slack-bot
-    build:
-      context: ./slack-bot
-    volumes:
-      - ${USERDIR}/work/slack-bot:/bot
-      - ${USERDIR}/DATA:/data
-    restart: always
-
-
-# ============= testing ==============================
+#    # ============= my custom iamges ==============================
 #
-#  test:
-#    container_name: test
+#  web:
+#    container_name: web
 #    build:
-#      context: ./test
+#      context: ./web
+#    ports:
+#      - 80:80
+#    volumes:
+#      - ${USERDIR}/DATA:/data
+#      - ${USERDIR}/work/www:/www
+#      - ${USERDIR}/work/diary:/diary
+#      - ${USERDIR}/work/finance/src/finance/static/finance:/finance_static
+#    restart: always
+#    depends_on:
+#      - "finance"
+#
+#  anki:
+#    container_name: anki
+#    build:
+#      context: ./anki
+#    volumes:
+#      - ${USERDIR}/DATA/anki:/data
+#      - ${USERDIR}/work/anki-sync-server:/app
+#    restart: always
+#    ports:
+#      - 27701:27701
+#
+#  ngrok:
+#    container_name: ngrok
+#    build:
+#      context: ./ngrok
+#    restart: always
+#    volumes:
+#     - ${USERDIR}/DATA:/data
+#    ports:
+#      - 4040:4040
+#
+## ============= my own apps ==============================
+#
+#  finance:
+#    container_name: finance
+#    build:
+#      context: ./finance
+#    volumes:
+#      - ${USERDIR}/work/finance:/finance
+#      - ${USERDIR}/work/finance_scaper:/scraper
+#      - ${USERDIR}/DATA:/data
+#    restart: always
+#    ports:
+#      - 8080:8080
+#
+#  slack-bot:
+#    container_name: slack-bot
+#    build:
+#      context: ./slack-bot
+#    volumes:
+#      - ${USERDIR}/work/slack-bot:/bot
+#      - ${USERDIR}/DATA:/data
+#    restart: always
+#
+#
+## ============= testing ==============================
+##
+##  test:
+##    container_name: test
+##    build:
+##      context: ./test
