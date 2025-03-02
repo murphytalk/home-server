@@ -56,6 +56,21 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     
+# Sonnar  – TV  Download and Management
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /mnt/DL/Configs/sonarr:/config
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+        
 # Portainer - WebUI for Containers
   portainer:
    image: portainer/portainer-ce
