@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  python-dev:
+    build: .
+    container_name: python-dev
+    hostname: py-dev
+    network_mode: "host"
+    volumes:
+      - /extra:/py-extra
+      - /extra/work/py-dev/devuser:/home/devuser
+    environment:
+      TZ: Asia/Tokyo
+    working_dir: /home/devuser
+    entrypoint: /bin/bash
+    tty: true
+    stdin_open: true
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      PUID: 1024
+      PGID: 1000
+      TZ: Asia/Tokyo
+    ports:
+      - 5432:5432
+    volumes:
+      - /extra/postgres/data:/var/lib/postgresql/data
+      - /extra/postgres/conf:/etc/postgresql
+    command: 
+        postgres -c config_file=/etc/postgresql/postgresql.conf
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /extra/portainer:/data
