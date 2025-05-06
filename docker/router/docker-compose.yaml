@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  #  DOCKER_BUILDKIT=0 docker-compose up -d python-dev
   python-dev:
     build: .
     container_name: python-dev
@@ -8,10 +9,10 @@ services:
     network_mode: "host"
     volumes:
       - /extra:/py-extra
-      - /extra/work/py-dev/devuser:/home/devuser
+      - /extra/py-dev:/home/devuser
     environment:
       TZ: Asia/Tokyo
-    working_dir: /home/devuser
+    working_dir: /py-extra
     entrypoint: /bin/bash
     tty: true
     stdin_open: true
