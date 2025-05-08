@@ -29,7 +29,6 @@ services:
       - 5432:5432
     volumes:
       - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/etc/periodic/15min
-      - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/etc/periodic/daily
       - /extra/postgres/data:/var/lib/postgresql/data
       - /extra/postgres/conf:/etc/postgresql
       - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/backup
