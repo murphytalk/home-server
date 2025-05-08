@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+MYUID=1000
+MYGID=1000
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
@@ -18,10 +21,12 @@ else
   FNAME="${DB_NAME}-${TM}"
 fi
 
-PGPASSWORD="java2" pg_dump  -U postgres -d $DB_NAME  | gzip > "${DIR}/${FNAME}.sql.gz"
+BKFN="${DIR}/${FNAME}.sql.gz"
+PGPASSWORD="java2" pg_dump  -U postgres -d $DB_NAME  | gzip > $BKFN
+chown $MYUID:$MYGID $BKFN
 
 if [ -z "$daily" ];then
-   find $DIR -type f -name "*.gz" -mmin +60 -exec rm {} \;
+   find $DIR -type f -name "${DB_NAME}-*.gz" -mmin +60 -exec rm {} \;
 else
-   find $DIR -type f -name "daily*.gz" -mtime +3 -exec rm {} \;
+   find $DIR -type f -name "daily-${DB_NAME}-*.gz" -mtime +3 -exec rm {} \;
 fi
