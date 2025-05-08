@@ -28,11 +28,13 @@ services:
     ports:
       - 5432:5432
     volumes:
+      - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/etc/periodic/15min
+      - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/etc/periodic/daily
       - /extra/postgres/data:/var/lib/postgresql/data
       - /extra/postgres/conf:/etc/postgresql
-      - /extra/postgres/backup:/backup
-    command: 
-        postgres -c config_file=/etc/postgresql/postgresql.conf
+      - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/backup
+    command:
+      postgres -c config_file=/etc/postgresql/postgresql.conf
     restart: unless-stopped
 
   portainer:
