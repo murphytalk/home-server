@@ -6,14 +6,14 @@ ARG USERNAME=devuser
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-# Install required dependencies
+# Install psycopg2 dependencies, git, and vim in a single layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential iputils-ping curl \
-    git \
-    vim \
-    openssh-client \
-    && rm -rf /var/lib/apt/lists/*
+        libpq5 \
+        git  openssh-client \
+        vim htop screen && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a new user and group with the specified UID and GID
 RUN groupadd --gid $USER_GID $USERNAME && \
