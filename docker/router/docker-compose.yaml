@@ -10,8 +10,7 @@ services:
     build: .
     container_name: python-dev
     hostname: py-dev
-    networks:
-      - proxy-net
+    network_mode: "host"
     volumes:
       - /extra:/py-extra
       - /extra/py-dev:/home/devuser
@@ -60,8 +59,7 @@ services:
     container_name: npm
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
+      - '8080:80'
       - '81:81'
     networks:
       - proxy-net
