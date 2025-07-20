@@ -1,5 +1,9 @@
 version: "3.9"
 
+networks:
+  proxy-net:
+    driver: bridge
+
 services:
   #  DOCKER_BUILDKIT=0 docker-compose up -d python-dev
   python-dev:
@@ -20,6 +24,8 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: postgres
+    networks:
+      - proxy-net
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       PUID: 1024
@@ -33,8 +39,8 @@ services:
       - /extra/postgres/data:/var/lib/postgresql/data
       - /extra/postgres/conf:/etc/postgresql
       - /extra/SYNCTHING/exclude-mobile/BACKUP/router/postgres-backup:/backup
-    command:
-      postgres -c config_file=/etc/postgresql/postgresql.conf
+    command: >
+      sh -c 'crond && syslogd && exec gosu postgres postgres -c config_file=/etc/postgresql/postgresql.conf'
     restart: unless-stopped
 
   portainer:
@@ -46,3 +52,17 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /extra/portainer:/data
+
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '81:81'
+    networks:
+      - proxy-net
+    volumes:
+      - /extra/npm/data:/data
+      - /extra/npm/letsencrypt:/etc/letsencrypt
