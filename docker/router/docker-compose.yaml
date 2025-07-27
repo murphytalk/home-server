@@ -57,6 +57,8 @@ services:
     image: caddy:latest
     container_name: caddy
     restart: unless-stopped
+    networks:
+      - proxy-net
     ports:
       - "8080:80"
       - "8443:443"
