@@ -1,7 +1,9 @@
 http://ba6afc3da179.ngrok-free.app {
-    protocols h1
     reverse_proxy http://192.168.100.1:8000 {
         header_up Host {host}
+        transport http {
+            versions h1
+        }
     }
 }
 
