@@ -52,17 +52,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /extra/portainer:/data
 
-  caddy:
-    image: caddy:latest
-    container_name: caddy
-    restart: unless-stopped
-    networks:
-      - proxy-net
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx
     ports:
       - "8080:80"
-      - "8443:443"
-      - "8443:443/udp" # Required for HTTP/3
     volumes:
-      - ./caddy/etc:/etc/caddy
-      - /extra/data:/data
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - proxy-net
 
