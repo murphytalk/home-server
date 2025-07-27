@@ -62,3 +62,16 @@ services:
     networks:
       - proxy-net
 
+#  caddy:
+#    image: caddy:latest
+#    container_name: caddy
+#    restart: unless-stopped
+#    networks:
+#      - proxy-net
+#    ports:
+#      - "8080:80"
+#      - "8443:443"
+#      - "8443:443/udp" # Required for HTTP/3
+#    volumes:
+#      - ./caddy/etc:/etc/caddy
+#      - /extra/data:/data
