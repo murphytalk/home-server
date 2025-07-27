@@ -58,9 +58,9 @@ services:
     container_name: caddy
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp" # Required for HTTP/3
+      - "8080:80"
+      - "8443:443"
+      - "8443:443/udp" # Required for HTTP/3
     volumes:
       - /extra/caddy/etc-caddy:/etc/caddy
       - /extra/data:/data
