@@ -9,8 +9,8 @@ services:
   python-dev:
     build: .
     container_name: python-dev
-    hostname: py-dev
-    network_mode: "host"
+    networks:
+      - proxy-net
     volumes:
       - /extra:/py-extra
       - /extra/py-dev:/home/devuser
@@ -62,6 +62,6 @@ services:
       - "8443:443"
       - "8443:443/udp" # Required for HTTP/3
     volumes:
-      - /extra/caddy/etc-caddy:/etc/caddy
+      - ./caddy/etc:/etc/caddy
       - /extra/data:/data
 
