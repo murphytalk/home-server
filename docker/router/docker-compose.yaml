@@ -9,8 +9,7 @@ services:
   python-dev:
     build: .
     container_name: python-dev
-    networks:
-      - proxy-net
+    network_mode: "host"  
     volumes:
       - /extra:/py-extra
       - /extra/py-dev:/home/devuser
