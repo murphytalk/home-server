@@ -1,13 +1,13 @@
 http://ba6afc3da179.ngrok-free.app {
         # Route requests for /n8n/* to the n8n service
         # The handle_path directive strips /n8n from the URL path
-        handle_path /n8n/* {
-           reverse_proxy http://n8n:5678
-        }
+        #handle_path /n8n/* {
+        #   reverse_proxy http://n8n:5678
+        #}
     
         # Route all other requests to the default service
         handle {
-            reverse_proxy http://python-dev:8000
+            reverse_proxy http://192.168.100.1:8000
         }
 }
 
