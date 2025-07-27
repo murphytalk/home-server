@@ -16,11 +16,10 @@ services:
       - /extra/py-dev:/home/devuser
     environment:
       TZ: Asia/Tokyo
-    working_dir: /py-extra/work/finance_scraper
-    command: >
-      sh -c ". v/bin/activate && gunicorn --bind 0.0.0.0:8000 ui.app:app"
-    restart: unless-stopped
-
+    working_dir: /py-extra
+    entrypoint: /bin/bash
+    tty: true
+    stdin_open: true
 
   postgres:
     image: postgres:17-alpine
@@ -54,15 +53,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /extra/portainer:/data
 
-  npm:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: npm
+  caddy:
+    image: caddy:latest
+    container_name: caddy
     restart: unless-stopped
     ports:
-      - '8080:80'
-      - '81:81'
-    networks:
-      - proxy-net
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # Required for HTTP/3
     volumes:
-      - /extra/npm/data:/data
-      - /extra/npm/letsencrypt:/etc/letsencrypt
+      - /extra/caddy/etc-caddy:/etc/caddy
+      - /extra/data:/data
+
