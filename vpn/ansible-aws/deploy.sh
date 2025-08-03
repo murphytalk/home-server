@@ -7,11 +7,12 @@ set -e
 TEMPLATE_ID="lt-0b785b9218c0db172"
 REGION="ap-east-1"
 # IMPORTANT: Update this path to your key on the Gentoo machine
-KEY_NAME="/mnt/d/Syncthing/mobile/vpn/stargate-aws-hk.pem"
-PLAYBOOK="playbook.yml"
+KEY_NAME="~/.ssh/stargate-aws-hk.pem"
+PLAYBOOK="$(dirname "$0")/playbook.yml"
 PROFILE="my-stargate-profile"
 INSTANCE_NAME=""
 INSTANCE_ID=""
+INVENTORY_FILE="/tmp/ansible-inventory.txt"
 
 # --- Function to show usage ---
 usage() {
@@ -89,7 +90,7 @@ PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --region "$
 echo "Public IP: $PUBLIC_IP"
 
 # --- 3. Create Ansible inventory ---
-echo "Creating temporary Ansible inventory file..."
+echo "Creating temporary Ansible inventory file $INVENTORY_FILE..."
 cat > "$INVENTORY_FILE" << EOL
 [star-gate]
 $PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=$KEY_NAME
@@ -97,6 +98,7 @@ EOL
 
 # --- 4. Run Ansible playbook ---
 echo "Running Ansible playbook..."
+export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i "$INVENTORY_FILE" $PLAYBOOK
 
 echo "Deployment complete."
