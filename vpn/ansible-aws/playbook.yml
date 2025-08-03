@@ -1,0 +1,102 @@
+---
+- hosts: star-gate
+  become: yes
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ubuntu to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Create WireGuard directory
+      file:
+        path: /home/ubuntu/wireguard/config
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy Docker Compose file
+      copy:
+        src: docker-compose.wireguard.yml
+        dest: /home/ubuntu/wireguard/docker-compose.yml
+
+    - name: Deploy WireGuard container
+      command: docker-compose -f /home/ubuntu/wireguard/docker-compose.yml up -d
+      args:
+        chdir: /home/ubuntu/wireguard
+
+    - name: Copy DDNS scripts
+      copy:
+        src: ../ddns
+        dest: /home/ubuntu/
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Make DDNS scripts executable
+      file:
+        path: "/home/ubuntu/ddns/{{ item }}"
+        mode: a+x
+      with_items:
+        - duckdns.sh
+        - dynu.sh
+
+    - name: Copy systemd service files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/systemd/system/
+      with_items:
+        - duckdns.service
+        - dynu.service
+
+    - name: Enable and start DDNS services
+      systemd:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      with_items:
+        - duckdns.service
+        - dynu.service
