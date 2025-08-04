@@ -25,13 +25,13 @@ param (
     #[string]$InstanceId = 'i-0294a506d8609ea8e',
     [string]$InstanceId = 'i-0fa824dcf80342032',
 
-    [string]$SSHKeyPath = "D:\Syncthing\mobile\vpn\stargate-aws-hk.pem",
+    [string]$SSHKeyPath = "D:/Syncthing/mobile/vpn/stargate-aws-hk.pem",
     
-    [string]$LocalCfgPath = "D:\Syncthing\mobile\vpn",
+    [string]$LocalCfgPath = "D:/Syncthing/mobile/vpn",
 
     [string]$EC2User = 'ubuntu',
 
-    [string]$RemoteConfigPath = '~\wireguard\config\peer_desktop\peer_desktop.conf',
+    [string]$RemoteConfigPath = '~/wireguard/config/peer_desktop/peer_desktop.conf',
 
     [string]$Profile = 'my-stargate-profile',
 
@@ -160,16 +160,26 @@ function Download-WireGuardConfigFromWSL {
     }
 
     # Convert the Windows path to a WSL path
-    $wslConfigPath = wsl wslpath -u "$LocalConfigFilePath"
+    $path = $LocalConfigFilePath.Replace('\', '/')
+    $wslConfigPath = wsl wslpath -u "$path"
+    Write-Host "WSL config path: $wslConfigPath"
+    
+    # Resolve wireguard.sh path and convert it for WSL
+    $wireguardShPath = Join-Path $PSScriptRoot "wireguard.sh"
+    # Replace backslashes with forward slashes for wslpath compatibility
+    $wireguardShPathForWsl = $wireguardShPath.Replace('\', '/')
+    $wslWireguardShPath = wsl wslpath -u $wireguardShPathForWsl
 
     try {
         $wslCommand = "wsl"
-        # Execute the bash script with the --get-config flag
+        # Execute the bash script with arguments passed directly
         $wslArguments = @(
             "-e",
             "bash",
-            "-c",
-            "~/wireguard/wireguard.sh --get-config $InstanceId $wslConfigPath"
+            $wslWireguardShPath,
+            "--get-config",
+            $InstanceId,
+            $wslConfigPath
         )
 
         $process = Start-Process -FilePath $wslCommand -ArgumentList $wslArguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
@@ -333,22 +343,32 @@ if ($service -and $service.Status -eq 'Running') {
     $shutdown = $true
 }
 else {
-    $instanceState =  Get-EC2InstanceState -InstanceId $InstanceId
-    if ($instanceState -eq "running") {
-        Write-Host "EC2 instance '$InstanceId' is already running. Shutting it down now." -ForegroundColor Yellow
-        $shutdown = $true
+    if ($UseWSL) {
+        Write-Host "Asking WSL to see if EC2 instance '$InstanceId' is already running." -ForegroundColor Yellow
+    }
+    else {
+        $instanceState =  Get-EC2InstanceState -InstanceId $InstanceId
+        if ($instanceState -eq "running") {
+            Write-Host "EC2 instance '$InstanceId' is already running. Shutting it down now." -ForegroundColor Yellow
+            $shutdown = $true
+        }
     }
 }
 
 if ($shutdown) {
-    $uninstallSuccess = Uninstall-WireGuardTunnelService -WireGuardExePath $WireGuardExePath -TunnelName $TunnelName
-    Write-Host "Shutting down EC2 instance '$InstanceId'..."
-    try {
-        aws ec2 stop-instances --instance-ids $InstanceId --profile $Profile | Out-Null
-        Write-Host "EC2 instance '$InstanceId' shutdown successfully." -ForegroundColor Green
-    } catch {
-        Write-Error "Failed to shutdown EC2 instance '$InstanceId'. Error: $($_.Exception.Message)"
-        exit 1
+    if ($UseWSL) {
+        Write-Host "Asking WSL to see if EC2 instance '$InstanceId' is already running." -ForegroundColor Yellow
+    }
+    else {
+        $uninstallSuccess = Uninstall-WireGuardTunnelService -WireGuardExePath $WireGuardExePath -TunnelName $TunnelName
+        Write-Host "Shutting down EC2 instance '$InstanceId'..."
+        try {
+            aws ec2 stop-instances --instance-ids $InstanceId --profile $Profile | Out-Null
+            Write-Host "EC2 instance '$InstanceId' shutdown successfully." -ForegroundColor Green
+        } catch {
+            Write-Error "Failed to shutdown EC2 instance '$InstanceId'. Error: $($_.Exception.Message)"
+            exit 1
+        }
     }
     exit 0
 }

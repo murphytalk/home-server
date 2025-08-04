@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # --- Configuration ---
-INSTANCE_ID="i-0294a506d8609ea8e"
+INSTANCE_ID="i-0fa824dcf80342032"
 SSH_KEY_PATH="$HOME/.ssh/stargate-aws-hk.pem"
 LOCAL_CFG_PATH="$HOME/vpn"
 EC2_USER="ubuntu"
-REMOTE_CONFIG_PATH="~/wireguard/cfg/peer_desktop/peer_desktop.conf"
+REMOTE_CONFIG_PATH="~/wireguard/config/peer_desktop/peer_desktop.conf"
 PROFILE="my-stargate-profile"
 TUNNEL_NAME="$(basename "$REMOTE_CONFIG_PATH" .conf)"
 LOCAL_CONFIG_FILE="$LOCAL_CFG_PATH/$TUNNEL_NAME.conf"
@@ -129,6 +129,7 @@ shutdown_instance() {
 
 # --- Argument Parsing ---
 while [[ "$#" -gt 0 ]]; do
+    echo "Processing arg $1"
     case $1 in
         --start-vm-only) START_VM_ONLY=1; shift ;; 
         --shutdown) SHUTDOWN=1; shift ;; 
@@ -136,6 +137,8 @@ while [[ "$#" -gt 0 ]]; do
         *) log_error "Unknown parameter passed: $1"; exit 1 ;; 
     esac
 done
+
+#echo "GET_CONFIG is $GET_CONFIG INSTANCE_ID is $INSTANCE_ID GET_CONFIG_PATH is $GET_CONFIG_PATH"
 
 # --- Script Logic ---
 if [[ "$SHUTDOWN" == 1 ]]; then
@@ -157,12 +160,13 @@ if [[ "$START_VM_ONLY" == 1 ]]; then
     log_info "EC2 is running. Exiting as requested."
     exit 0
 fi
-
+log_info "EC2 is running. Continuing... GET_CONFIG is $GET_CONFIG"
 if [[ "$GET_CONFIG" == 1 ]]; then
     if [[ -z "$GET_CONFIG_PATH" ]]; then
         log_error "The --get-config flag requires a destination path."
         exit 1
     fi
+    log_info "Download config from $EC2_IP to path $GET_CONFIG_PATH"
     download_config_to_path "$EC2_IP" "$GET_CONFIG_PATH" || exit 1
     log_success "Config downloaded. Exiting as requested."
     exit 0
