@@ -345,6 +345,21 @@ if ($service -and $service.Status -eq 'Running') {
 else {
     if ($UseWSL) {
         Write-Host "Asking WSL to see if EC2 instance '$InstanceId' is already running." -ForegroundColor Yellow
+        $wireguardShPath = Join-Path $PSScriptRoot "wireguard.sh"
+        $wireguardShPathForWsl = $wireguardShPath.Replace('\', '/')
+        $wslWireguardShPath = wsl wslpath -u $wireguardShPathForWsl
+
+        $wslArguments = @(
+            "-e",
+            "bash",
+            $wslWireguardShPath,
+            "--is-running"
+        )
+        $process = Start-Process -FilePath "wsl" -ArgumentList $wslArguments -Wait -NoNewWindow -PassThru
+        if ($process.ExitCode -eq 0) {
+            Write-Host "EC2 instance '$InstanceId' is already running. Shutting it down now." -ForegroundColor Yellow
+            $shutdown = $true
+        }
     }
     else {
         $instanceState =  Get-EC2InstanceState -InstanceId $InstanceId
@@ -356,11 +371,22 @@ else {
 }
 
 if ($shutdown) {
+    $uninstallSuccess = Uninstall-WireGuardTunnelService -WireGuardExePath $WireGuardExePath -TunnelName $TunnelName
     if ($UseWSL) {
-        Write-Host "Asking WSL to see if EC2 instance '$InstanceId' is already running." -ForegroundColor Yellow
+        Write-Host "Asking WSL to shut down the EC2 instance..." -ForegroundColor Yellow
+        $wireguardShPath = Join-Path $PSScriptRoot "wireguard.sh"
+        $wireguardShPathForWsl = $wireguardShPath.Replace('\', '/')
+        $wslWireguardShPath = wsl wslpath -u $wireguardShPathForWsl
+
+        $wslArguments = @(
+            "-e",
+            "bash",
+            $wslWireguardShPath,
+            "--shutdown"
+        )
+        Start-Process -FilePath "wsl" -ArgumentList $wslArguments -Wait -NoNewWindow | Out-Null
     }
     else {
-        $uninstallSuccess = Uninstall-WireGuardTunnelService -WireGuardExePath $WireGuardExePath -TunnelName $TunnelName
         Write-Host "Shutting down EC2 instance '$InstanceId'..."
         try {
             aws ec2 stop-instances --instance-ids $InstanceId --profile $Profile | Out-Null

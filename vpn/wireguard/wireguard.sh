@@ -14,6 +14,7 @@ START_VM_ONLY=0
 SHUTDOWN=0
 GET_CONFIG=0
 GET_CONFIG_PATH=""
+IS_RUNNING_CHECK=0
 
 # --- Colors ---
 GREEN='\033[0;32m'
@@ -27,6 +28,14 @@ log_info() { echo -e "${CYAN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_success() { echo -e "${GREEN}[ OK ]${NC} $1"; }
 log_error() { echo -e "${RED}[FAIL]${NC} $1"; }
+
+is_wireguard_installed() {
+    if command -v wg-quick &> /dev/null; then
+        return 0 # success (true)
+    else
+        return 1 # failure (false)
+    fi
+}
 
 wait_for_ec2_running() {
     log_info "Checking EC2 instance state..."
@@ -91,6 +100,10 @@ download_config() {
 }
 
 uninstall_tunnel() {
+    if ! is_wireguard_installed; then
+        log_warn "WireGuard not found in WSL. Skipping tunnel operations."
+        return
+    fi
     if ip link show "$WIREGUARD_INTERFACE" &>/dev/null;
     then
         log_info "Removing existing tunnel $WIREGUARD_INTERFACE"
@@ -102,6 +115,10 @@ uninstall_tunnel() {
 }
 
 install_tunnel() {
+    if ! is_wireguard_installed; then
+        log_warn "WireGuard not found in WSL. Skipping tunnel operations."
+        return
+    fi
     if [[ ! -f "$LOCAL_CONFIG_FILE" ]]; then
         log_error "Config file $LOCAL_CONFIG_FILE does not exist."
         return 1
@@ -129,14 +146,29 @@ shutdown_instance() {
 
 # --- Argument Parsing ---
 while [[ "$#" -gt 0 ]]; do
-    echo "Processing arg $1"
     case $1 in
-        --start-vm-only) START_VM_ONLY=1; shift ;; 
-        --shutdown) SHUTDOWN=1; shift ;; 
-        --get-config) GET_CONFIG=1; INSTANCE_ID="$2"; GET_CONFIG_PATH="$3"; shift 3;; 
+        --start-vm-only) START_VM_ONLY=1; shift ;;
+        --shutdown) SHUTDOWN=1; shift ;;
+        --get-config) GET_CONFIG=1; INSTANCE_ID="$2"; GET_CONFIG_PATH="$3"; shift 3;;
+        --is-running) IS_RUNNING_CHECK=1; shift;;
         *) log_error "Unknown parameter passed: $1"; exit 1 ;; 
     esac
 done
+
+# --- Script Logic ---
+if [[ "$IS_RUNNING_CHECK" == 1 ]]; then
+    state=$(aws ec2 describe-instances --profile "$PROFILE" \
+        --instance-ids "$INSTANCE_ID" \
+        --query "Reservations[0].Instances[0].State.Name" \
+        --output text 2>/dev/null)
+    if [[ "$state" == "running" ]]; then
+        exit 0 # Success, it's running
+    else
+        exit 1 # Failure, not running or error
+    fi
+fi
+
+
 
 #echo "GET_CONFIG is $GET_CONFIG INSTANCE_ID is $INSTANCE_ID GET_CONFIG_PATH is $GET_CONFIG_PATH"
 
