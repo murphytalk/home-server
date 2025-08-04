@@ -132,7 +132,7 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --start-vm-only) START_VM_ONLY=1; shift ;; 
         --shutdown) SHUTDOWN=1; shift ;; 
-        --get-config) GET_CONFIG=1; GET_CONFIG_PATH="$2"; shift; shift ;; 
+        --get-config) GET_CONFIG=1; INSTANCE_ID="$2"; GET_CONFIG_PATH="$3"; shift 3;; 
         *) log_error "Unknown parameter passed: $1"; exit 1 ;; 
     esac
 done

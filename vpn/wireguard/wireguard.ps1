@@ -169,7 +169,7 @@ function Download-WireGuardConfigFromWSL {
             "-e",
             "bash",
             "-c",
-            "~/wireguard/wireguard.sh --get-config $wslConfigPath"
+            "~/wireguard/wireguard.sh --get-config $InstanceId $wslConfigPath"
         )
 
         $process = Start-Process -FilePath $wslCommand -ArgumentList $wslArguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
