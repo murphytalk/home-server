@@ -1,11 +1,21 @@
 #!/bin/bash
 
+if [ ! -f "$HOME/.finance-credentials/aws.ini" ]; then
+    echo "~/.finance-credentials/aws.ini not found"
+    exit 1
+fi
+
+INSTANCE_ID=$(grep EC2 "$HOME/.finance-credentials/aws.ini" | cut -d '=' -f 2)
+if [ -z "$INSTANCE_ID" ]; then
+    echo "EC2 instance ID not found in ~/.finance-credentials/aws.ini"
+    exit 1
+fi
+
 # --- Configuration ---
-INSTANCE_ID="i-0294a506d8609ea8e"
 SSH_KEY_PATH="$HOME/.ssh/stargate-aws-hk.pem"
 LOCAL_CFG_PATH="$HOME/vpn"
 EC2_USER="ubuntu"
-REMOTE_CONFIG_PATH="~/wireguard/cfg/peer_desktop/peer_desktop.conf"
+REMOTE_CONFIG_PATH="~/wireguard/config/peer_desktop/peer_desktop.conf"
 PROFILE="my-stargate-profile"
 TUNNEL_NAME="$(basename "$REMOTE_CONFIG_PATH" .conf)"
 LOCAL_CONFIG_FILE="$LOCAL_CFG_PATH/$TUNNEL_NAME.conf"
@@ -73,7 +83,7 @@ download_config_to_path() {
     local dest_dir=$(dirname "$dest_path")
 
     mkdir -p "$dest_dir"
-    log_info "Downloading config via SCP to $dest_path..."
+    log_info "Downloading config from remote $REMOTE_CONFIG_PATH via SCP to $dest_path..."
     scp -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
         "$EC2_USER@$ip:$REMOTE_CONFIG_PATH" "$dest_path"
 
