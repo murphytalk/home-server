@@ -25,6 +25,7 @@ SHUTDOWN=0
 GET_CONFIG=0
 GET_CONFIG_PATH=""
 IS_RUNNING_CHECK=0
+CONNECT=0
 
 # --- Colors ---
 GREEN='\033[0;32m'
@@ -176,11 +177,41 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --start-vm-only) START_VM_ONLY=1; shift ;;
         --shutdown) SHUTDOWN=1; shift ;;
+        --connect) CONNECT=1; shift ;;
         --get-config) GET_CONFIG=1; INSTANCE_ID="$2"; GET_CONFIG_PATH="$3"; shift 3;;
         --is-running) IS_RUNNING_CHECK=1; shift;;
         *) log_error "Unknown parameter passed: $1"; exit 1 ;; 
     esac
 done
+
+if [[ "$CONNECT" == 1 ]]; then
+    if ip link show "$WIREGUARD_INTERFACE" &>/dev/null; then
+        log_info "WireGuard interface $WIREGUARD_INTERFACE is already active. Exiting."
+        exit 0
+    fi
+
+    check_instance_state
+    if [[ "$state" != "running" ]]; then
+        log_info "EC2 instance is not running. Starting it..."
+        wait_for_ec2_running || exit 1
+    else
+        log_info "EC2 instance is already running."
+    fi
+
+    EC2_IP=$(get_ec2_public_ip)
+    if [[ $? -ne 0 || -z "$EC2_IP" ]]; then
+        log_error "Failed to retrieve public IP."
+        exit 1
+    fi
+    log_success "Public IP retrieved: $EC2_IP"
+
+    download_config "$EC2_IP" || exit 1
+    uninstall_tunnel
+    install_tunnel || exit 1
+
+    log_success "Connect script completed successfully."
+    exit 0
+fi
 
 # --- Script Logic ---
 if [[ "$IS_RUNNING_CHECK" == 1 ]]; then
