@@ -6,8 +6,10 @@ ARG USERNAME=devuser
 ARG USER_UID=1000
 ARG USER_GID=1000
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install psycopg2 dependencies, git, and vim in a single layer
-RUN apt-get update && apt-get install -y --no-install-recommends libpq5 git openssh-client vim htop screen curl procps  &&  apt-get clean  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends libpq5 git openssh-client vim htop screen curl procps build-essential libxml2-dev libxslt1-dev zlib1g-dev &&  apt-get clean  && rm -rf /var/lib/apt/lists/*
 
 # Create a new user and group with the specified UID and GID
 RUN groupadd --gid $USER_GID $USERNAME && \
